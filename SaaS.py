@@ -18,15 +18,6 @@ ps = fa.financial_ratios(tickers, api_key, period='quarter').loc['priceToSalesRa
 ps.plot()
 
 # Revenue Growth
-revenue = pd.DataFrame(
-    {
-        'revenue': fa.income_statement(ticker, api_key, period="quarter").loc['revenue', :].sort_values().reset_index()['index']
-    }
-).reset_index()
-revenue['growth'] = revenue / revenue.shift(4) - 1
-revenue.revenue.plot(kind='bar')
-revenue.growth.plot()
-
 revenue = pd.DataFrame({'Date':[], 'Comp': [], 'Revenue': [], 'Rev_Growth': []})
 for t in tickers:
     rev_temp = fa.income_statement(t, api_key, period='quarter').loc['revenue', :].sort_values().reset_index()
