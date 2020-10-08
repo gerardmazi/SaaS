@@ -1,34 +1,36 @@
-###########################################################################################################
+#######################################################################################################################
 #
-#                                           SaaS Analytics
+#                                                  SaaS Analytics
 #
-###########################################################################################################
+#######################################################################################################################
 
 import FundamentalAnalysis as fa
 import pandas as pd
 
 tickers = [
-    'DOCU', 'CRM'
+    'DOCU', 'CRM', 'TWLO'
 ]
-ticker = 'DOCU'
-api_key = ''
+ticker = 'TWLO'
+api_key = '16f510a90ba71ddcad5847175ba0a5c8'
 
-# Price to Sales
-ps = fa.financial_ratios(tickers, api_key, period='quarter').loc['priceToSalesRatio', :].sort_values()
-ps.plot()
 
 # Revenue Growth
-revenue = pd.DataFrame({'Date':[], 'Comp': [], 'Revenue': [], 'Rev_Growth': []})
+revenue = pd.DataFrame({'Date':[], 'Comp': [], 'Revenue': [], 'Rev_Growth': [], 'Rev_T4Q': []})
 for t in tickers:
     rev_temp = fa.income_statement(t, api_key, period='quarter').loc['revenue', :].sort_values().reset_index()
     temp_df = pd.DataFrame(
         {
-            'Date':         rev_temp['index'],
+            'Date':         pd.to_datetime(rev_temp['index']),
             'Comp':         t,
             'Revenue':      rev_temp['revenue'],
-            'Rev_Growth':   rev_temp['revenue'] / rev_temp['revenue'].shift(4) - 1
+            'Rev_Growth':   rev_temp['revenue'] / rev_temp['revenue'].shift(4) - 1,
+            'Rev_T4Q':      rev_temp['revenue'].rolling(4).sum()
         }
     )
+    quote = fa.stock_data(t, period="max", interval="1d")['close'].reset_index()
+    quote = quote.rename(columns={'index': 'Date', 'close': 'Price'})
+    quote['Date'] = pd.to_datetime(quote['Date'])
+    temp_df = pd.merge(temp_df, quote, how='left', on='Date')
     revenue = pd.concat([revenue, temp_df])
 
-revenue.groupby(['Date', 'Comp'])['Rev_Growth'].sum().unstack().plot()
+revenue.groupby(['Date', 'Comp'])['Rev_Growth'].sum().unstack().fillna(method='ffill').plot()
