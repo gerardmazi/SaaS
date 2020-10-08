@@ -11,7 +11,7 @@ tickers = [
     'DOCU', 'CRM', 'TWLO'
 ]
 ticker = 'TWLO'
-api_key = '16f510a90ba71ddcad5847175ba0a5c8'
+api_key = ''
 
 
 # Revenue Growth
